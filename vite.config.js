@@ -3,7 +3,5 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  publicPath: process.env.NODE_ENV === 'production'
-    ? '/weather-app/'
-    : '/',
+  base: '/weather-app/'
 })
