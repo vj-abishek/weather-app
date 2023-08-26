@@ -7,9 +7,7 @@ function App() {
   const [weatherData, setWeatherData] = useState({});
   const [currentLocation, setCurrentLocation] = useState("");
   const [gotLocation, setGotLocation] = useState(false);
-  const [locationError, setLocationError] = useState(
-    "Please enable location access in your device settings. If you're using a mobile device, make sure to allow location access."
-  );
+  const [locationError, setLocationError] = useState("");
 
   const fetchWeatherData = useCallback(async (abortController) => {
     try {
