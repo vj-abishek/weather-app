@@ -7,7 +7,9 @@ function App() {
   const [weatherData, setWeatherData] = useState({});
   const [currentLocation, setCurrentLocation] = useState("");
   const [gotLocation, setGotLocation] = useState(false);
-  const [locationError, setLocationError] = useState("");
+  const [locationError, setLocationError] = useState(
+    "Please enable location access in your device settings. If you're using a mobile device, make sure to allow location access."
+  );
 
   const fetchWeatherData = useCallback(async (abortController) => {
     try {
@@ -104,7 +106,7 @@ function App() {
           switch (error.code) {
             case error.PERMISSION_DENIED:
               setLocationError(
-                "Please allow location access in your browser settings."
+                "Please enable location access in your device settings. If you're using a mobile device, make sure to allow location access."
               );
               break;
             case error.POSITION_UNAVAILABLE:
@@ -126,14 +128,14 @@ function App() {
   };
 
   return (
-    <div className="flex justify-center items-center h-screen flex-col dark:bg-gray-900 dark:text-gray-200">
+    <div className="flex justify-center items-center h-[100dvh] flex-col dark:bg-gray-900 dark:text-gray-200">
       {weatherData.current_weather ? (
         <>
           <p className="text-xl font-medium">Currently</p>
           {!gotLocation && (
             <div
               onClick={getGeoLocation}
-              className="flex flex-row items-center justify-center gap-2 border-2 border-gray-700 px-4 py-1 text-[13px] mt-4 cursor-pointer rounded-full text-blue-400 fill-current bg-slate-800"
+              className="flex flex-row items-center justify-center gap-2 border-2 dark:border-gray-700 px-4 py-1 text-[13px] mt-4 cursor-pointer rounded-full dark:text-blue-400 fill-current dark:bg-slate-800"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -145,7 +147,11 @@ function App() {
               <span>Use precise location</span>
             </div>
           )}
-          {locationError && <p className="mt-3 text-sm">{locationError}</p>}
+          {locationError && (
+            <p className="mt-4 text-sm text-red-600 dark:text-red-400 max-w-xs text-center">
+              {locationError}
+            </p>
+          )}
           <p className="text-8xl font-bold pt-4">
             {weatherData.current_weather &&
               weatherData.current_weather.temperature}
