@@ -2,12 +2,17 @@ import { useCallback, useEffect, useState } from "react";
 import "./App.css";
 import Placeholder from "./components/Placeholder";
 import weatherDescriptions from "./components/WeatherCodes";
+import useLocalStorage from "./lib/useLocalStorage";
 
 function App() {
   const [weatherData, setWeatherData] = useState({});
-  const [currentLocation, setCurrentLocation] = useState("");
+  const [currentDisplayLocation, setCurrentDisplayLocation] = useState("");
   const [gotLocation, setGotLocation] = useState(false);
   const [locationError, setLocationError] = useState("");
+  const [cacheLocationData, setCacheLocationData] = useLocalStorage(
+    "locationData",
+    0
+  );
 
   const fetchWeatherData = useCallback(async (abortController) => {
     try {
@@ -25,10 +30,20 @@ function App() {
 
   useEffect(() => {
     const abortController = new AbortController();
-    fetchWeatherData(abortController);
+
+    if (cacheLocationData) {
+      getWeather(
+        cacheLocationData.city,
+        cacheLocationData.latitude,
+        cacheLocationData.longitude
+      );
+      setCurrentDisplayLocation(cacheLocationData.city);
+    } else {
+      fetchWeatherData(abortController);
+    }
 
     return () => abortController.abort();
-  }, [fetchWeatherData]);
+  }, [fetchWeatherData, cacheLocationData]);
 
   const maxWeather = () => {
     if (weatherData) {
@@ -71,7 +86,7 @@ function App() {
 
   const getWeather = async (city, latitude, longitude) => {
     try {
-      setCurrentLocation(city);
+      setCurrentDisplayLocation(city);
       const weatherResponse = await fetch(
         `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum&current_weather=true&timezone=auto`
       );
@@ -87,7 +102,16 @@ function App() {
       `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${long}`
     );
     const data = await url.json();
-    return data?.address?.city;
+    const address = data?.address;
+    return (
+      address?.city ||
+      address?.town ||
+      address?.village ||
+      address?.county ||
+      address?.state ||
+      address?.state_district ||
+      address?.country
+    );
   };
 
   const getGeoLocation = () => {
@@ -99,6 +123,11 @@ function App() {
           const { latitude, longitude } = position.coords;
           const city = await getCity(latitude, longitude);
           getWeather(city, latitude, longitude);
+          setCacheLocationData({
+            latitude,
+            longitude,
+            city,
+          });
         },
         (error) => {
           switch (error.code) {
@@ -130,6 +159,12 @@ function App() {
       {weatherData.current_weather ? (
         <>
           <p className="text-xl font-medium">Currently</p>
+          {cacheLocationData !== 0 && (
+            <p className="text-xs font-medium pt-3">
+              <span className="text-gray-400">Location:</span>{" "}
+              {cacheLocationData.city}
+            </p>
+          )}
           {!gotLocation && (
             <div
               onClick={getGeoLocation}
@@ -161,7 +196,7 @@ function App() {
           </p>
           <p className="text-xs font-medium pt-3">
             {" "}
-            {localDay()} &middot; {currentLocation}
+            {localDay()} &middot; {currentDisplayLocation}
           </p>
         </>
       ) : (
