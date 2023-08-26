@@ -126,7 +126,7 @@ function App() {
   };
 
   return (
-    <div className="flex justify-center items-center h-[100dvh] flex-col dark:bg-gray-900 dark:text-gray-200">
+    <div className="height-100 flex justify-center items-center flex-col dark:bg-gray-900 dark:text-gray-200">
       {weatherData.current_weather ? (
         <>
           <p className="text-xl font-medium">Currently</p>
